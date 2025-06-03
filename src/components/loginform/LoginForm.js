@@ -3,42 +3,59 @@ import Link from "next/link.js";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+import toast from "react-hot-toast";
+import { login } from "@/services/auth";
+import { authenticate } from "@/network/helper";
+import Loader from "../loader";
+
 const LoginForm = () => {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [error, setFormError] = useState("");
+  const [loading, setLoading] = useState(false);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Mock validation for demonstration
-    if (!email) {
-      setError("Please enter your email");
-      return;
-    }
-    if (!password) {
-      setError("Please enter your password");
+
+    // Frontend validation
+    if (!email.trim()) {
+      setFormError("Please enter your email");
       return;
     }
 
-    // Get users from localStorage
-    const users = JSON.parse(localStorage.getItem('mockUsers') || '[]');
-    const user = users.find(u => u.email === email && u.password === password);
-
-    if (!user) {
-      setError("Invalid email or password");
+    if (!password.trim()) {
+      setFormError("Please enter your password");
       return;
     }
 
-    setError("");
-    // Set mock login state
-    localStorage.setItem('mockLoggedIn', 'true');
-    // Use router to navigate to home page
-    router.push('/home');
+    setFormError("");
+
+    try {
+      setLoading(true)
+      const response = await login({ email, password });
+
+      // Call authenticate and pass a next callback
+      await authenticate(response, () => {
+        toast.success(response.message || "Login successful!");
+        router.push("/home");
+      });
+
+    } catch (err) {
+      // Toast already handled inside login()
+      console.error("Login error", err);
+      setLoading(false)
+    }
+    finally {
+      setLoading(false)
+    }
   };
+
 
   return (
     <div className="w-full flex flex-col items-center justify-center px-4">
+      {loading && <Loader />}
       <h1 className="text-3xl md:text-4xl font-bold text-center text-[#195B48] mt-8 mb-2">Enter your Email Id</h1>
       <p className="text-base md:text-lg font-normal text-center text-[#195B48] mb-8">Access your Synapse dashboard and tools</p>
       <div className="w-full max-w-md bg-white border border-[#195B48]/30 rounded-xl p-8 md:p-10 flex flex-col items-center shadow-sm">
