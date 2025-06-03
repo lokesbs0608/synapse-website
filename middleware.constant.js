@@ -4,10 +4,8 @@ export const PUBLIC_ROUTES = ["/login", "/", "/education", "/faq", "/aboutus", "
 export const VIEW_ONLY_ROUTES = [];
 
 export const ROLE = {
-    USER: 4,
+    USER: 2,
     OWNER: 1,
-    ADMIN: 2,
-    MANAGER: 3
 };
 
 export const RESTRICTED_FOR_USER = [
